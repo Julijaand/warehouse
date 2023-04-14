@@ -1,0 +1,154 @@
+openapi: 3.0.0 # The OpenAPI version defines the overall structure of an API definition – what we can document and how we can document it.
+info: # contains the info section of the API specification: title, description (optional), and version
+  #description (optional), and version .
+  #title is the API name.
+  #version is an arbitrary string that specifies the version of the API.
+  title: Product catalog
+  description: Information about existing products at warehouse
+  version: "1.0.0"
+servers:
+  - url: /api # contains the servers section, which specifies the API server and base URL. All API paths are relative to this server URL.
+paths: # contains the paths section where we defined individual endpoints (paths) of our API, and the HTTP methods (operations) supported by these endpoints.
+  #An operation definition includes parameters, request body (if any), possible response status codes (such as 200 OK or 404 Not Found)
+  #and response contents. For more information, see Paths and Operations(https://swagger.io/docs/specification/paths-and-operations/).
+  # Operations can have parameters passed via URL path (/item/{id}), query string (/item?name=chair)
+  /products:
+    get:
+      summary: Get all information about warehouse products
+      # tags:
+      #   - products
+      operationId: api.read_all
+      responses:
+        "200":
+          description: Successfully read product list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "default":
+          description: All non standard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      summary: Create a new product
+      # tags:
+      #   - products
+      operationId: api.create_product
+      requestBody:
+        required: true
+        description: Create a new product
+        content:
+          application/json:
+            schema:
+            x-body-name: product
+              $ref: "#/components/schemas/Product"
+      responses:
+        "201":
+          description: Successfully created product
+        "409":
+          description: Product with provided id already exists
+        "default":
+          description: All non standard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /products/{product_id}:
+    get:
+      summary: Read one product
+      # tags:
+      #   - products
+      operationId: api.get_product_by_id
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Successfully read one product
+        "default":
+          description: "All non standard"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Delete product by id
+      # tags:
+      #   - products
+      operationId: api.delete_product
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Successfully deleted product
+        "404":
+          description: Product does not exist
+        "default":
+          description: "All non standard"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      summary: Update one product
+      # tags:
+      #   - products
+      operationId: api.update_product
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        description: Update an product
+        content:
+          application/json:
+            schema:
+              x-body-name: product
+              $ref: "#/components/schemas/Product"
+      responses:
+        "200":
+          description: Successfully updated product information
+        "default":
+          description: "All non standard"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
+components: #components/schemas section, which lets us define common data structures used in our API.
+  #They can be referenced via $ref whenever a schema is required – in parameters, request bodies, and response bodies.
+  schemas:
+    Product:
+      required:
+        - id
+      properties:
+        name:
+          type: string
+        supplier:
+          type: string
+        color:
+          type: string
+        price:
+          type: decimal
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+parameters:
+  id:
+    id: id
+    description: Product id
+    in: path
+    required: true
+    schema:
+      type: string
